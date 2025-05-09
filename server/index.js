@@ -1,7 +1,16 @@
 const pg = require("pg");
 const express = require("express");
 const morgan = require("morgan"); //logs http request to console in a consise format 
-//mount my rourter? 
+const authRoutes = require("../routes/auth");
+
+
+const server = express(); 
+
+server.use(express.json());
+server.use("/api/auth", authRoutes);
+server.use(require("morgan")("dev")); //logs the requests received to the server
+
+
 
 //create client to connect to the database
 const client = new pg.Client(
@@ -9,7 +18,7 @@ const client = new pg.Client(
 );
 
 //create the express server
-const server = express();
+
 
 //function to create our database table, seed data into the tables when first starting the server
 async function init() {
@@ -52,9 +61,7 @@ async function init() {
 //call the function so the server can start
 init();
 
-//middleware to use before all routes
-server.use(express.json()); //parses the request body so our route can access it
-server.use(require("morgan")("dev")); //logs the requests received to the server
+
 
 //endpoints CRUD
 //C - CREATE --> POST
@@ -120,4 +127,10 @@ server.delete("/api/notes/:id", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+// Error handler middleware
+server.use((err, req, res, next) => {
+  console.error(err.stack); // Log the full error
+  res.status(500).send("Something went wrong!");
 });
