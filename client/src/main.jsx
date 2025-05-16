@@ -9,16 +9,6 @@ import Notes from './components/Notes.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-<BrowserRouter>
-
-<Routes>
-
-<Route path="/" element={<App />} />
-<Route path="/login" element={<Login />}/>
-<Route path="/notes" element={<Notes />}/>
-
-</Routes>
-
-</BrowserRouter>
+<App />
   </StrictMode>,
 )

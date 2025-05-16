@@ -1,28 +1,21 @@
-import { Route, Routes, useSearchParams } from "react-router-dom";
-import AuthForm from "../features/auth/AuthForm";
-import { useMeQuery } from "../features/auth/authSlice";
-import Dashboard from "../features/dashboard/Dashboard";
-
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Login from './components/Login.jsx'
+import Notes from './components/Notes.jsx'
 
 function App() {
-  const [query] = useSearchParams();
-  const token = query.get("token");
+  const loggedIn = !!localStorage.getItem('token')
 
-  const guestRouter = (
-    <Routes>
-      <Route path="/*" element={<AuthForm />} />
-    </Routes>
-  );
-  const userRouter = (
-    <Routes>
-      <Route path="/*" element={<Dashboard token={token} />} />
-    </Routes>
-  );
-
-  const { data: me } = useMeQuery(token);
-  const loggedIn = !!me?.id;
-  return loggedIn ? userRouter : guestRouter;
+  return (
+    <BrowserRouter>
+      <Routes>
+        {!loggedIn && <Route path="/login" element={<Login />} />}
+        {loggedIn && <Route path="/notes" element={<Notes />} />}
+        {/* Redirect or fallback */}
+        <Route path="*" element={loggedIn ? <Notes /> : <Login />} />
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
+

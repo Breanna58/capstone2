@@ -10,13 +10,13 @@ export default function Login() {
 
         e.preventDefault()
         try {
-            const res = await fetch('/api/auth/login,' {
+            const res = await fetch('/api/auth/login', {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json '}, 
             body: JSON.stringify({ email, password }), 
          })
 
-         const data = await res.json()
+         const data = await res.json(); 
             if (res.ok) {
                 localStorage.setItem('token', data.token)
                 navigate("/notes")

@@ -8,9 +8,10 @@ const authRoutes = require("../routes/auth");
 
 const server = express(); 
 
+server.use(require("morgan")("dev")); //logs the requests received to the server
 server.use(express.json());
 server.use("/api/auth", authRoutes);
-server.use(require("morgan")("dev")); //logs the requests received to the server
+
 
 
 
@@ -33,7 +34,7 @@ async function init() {
     DROP TABLE IF EXISTS notes;
     CREATE TABLE notes(
         id SERIAL PRIMARY KEY,
-        txt VARCHAR(255),
+        text VARCHAR(255),
         ranking INTEGER DEFAULT 3 NOT NULL, 
         created_at TIMESTAMP DEFAULT now(),
         updated_at TIMESTAMP DEFAULT now()
@@ -75,7 +76,7 @@ init();
 server.post("/api/notes", async (req, res, next) => {
   try {
     //create the SQL query to create a new note based on the information in the request body
-    const SQL = `INSERT INTO notes(txt) VALUES($1) RETURNING *;`;
+    const SQL = `INSERT INTO notes(text) VALUES($1) RETURNING *;`;
     //await the response from the client querying the database
     const response = await client.query(SQL, [req.body.txt]);
     //send the response
