@@ -3,22 +3,25 @@ const router = express.Router();
 //modules reuire? 
 
 
+
+//fetch all products
 router.get('/', async (req, res) => {
 try { 
     const products = await productModel.getAllProducts(); 
     res.json(products); 
 
 
-} catch (err)
+} catch (err){
  res.status(500).json({error: err.message}); 
 
 }
 }); 
 
 
+//fetch product by id:
 
 
-router.get ('/:id', (req, res) => {
+router.get ('/:id', async (req, res) => {
 
     res.send(`product with ID: ${req.params.id}`); 
 

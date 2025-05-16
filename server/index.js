@@ -1,7 +1,9 @@
 const pg = require("pg");
 const express = require("express");
 const morgan = require("morgan"); //logs http request to console in a consise format 
-const authRoutes = require("../routes/auth");
+const authRoutes = require("../routes/auth"); 
+//add all files used here!!!
+
 
 
 const server = express(); 
