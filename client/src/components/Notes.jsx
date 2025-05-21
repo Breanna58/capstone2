@@ -1,34 +1,65 @@
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 function Notes() {
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState('');
 
-  // fetch notes from backend
-  useEffect(() => {
-    fetch('/api/notes')
-      .then(res => res.json())
-      .then(data => setNotes(data))
-      .catch(err => console.error(err));
-  }, []);
+  const token = localStorage.getItem('token');
 
-  // add a new note
+  // fetch notes from backend (with token)
+  useEffect(() => {
+    if (!token) return;
+  
+    fetch('/api/notes', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error('Unauthorized');
+        }
+  
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          throw new Error('Invalid JSON response from server');
+        }
+  
+        setNotes(data);
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Please log in to view notes');
+      });
+  }, [token]);
+
+  // add a new note (with token)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/notes', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: newNote }),
+        body: JSON.stringify({ email, password }), 
       });
-
-      const createdNote = await res.json();
-      setNotes([createdNote, ...notes]);
-      setNewNote('');
-    } catch (error) {
-      console.error('Error adding note:', error);
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+  
+      const { token } = data;
+      localStorage.setItem('token', token); 
+      navigate('/notes'); 
+    } catch (err) {
+      alert(err.message);
     }
   };
+  
 
   return (
     <div>
@@ -43,7 +74,7 @@ function Notes() {
       </form>
       <ul>
         {notes.map(note => (
-          <li key={note.id}>{note.text || note.txt}</li>
+          <li key={note.id}>{note.text}</li>
         ))}
       </ul>
     </div>
@@ -51,4 +82,3 @@ function Notes() {
 }
 
 export default Notes;
-

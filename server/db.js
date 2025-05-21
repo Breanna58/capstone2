@@ -1,12 +1,9 @@
-require('dotenv').config(); 
-const { Client } = require("pg"); 
- 
+const { Client } = require("pg");
+
 const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-  });
-  
-  client.connect();
-  
-  module.exports = {
-    client,
-  };
+  connectionString: process.env.DATABASE_URL || "postgres://localhost:5432/capstone"
+});
+
+
+
+module.exports = { client };
