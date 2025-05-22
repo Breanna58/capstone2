@@ -3,7 +3,19 @@ const router = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { client } = require("../server/db");
+const { requireAdmin } = require('./middleware'); 
 
+
+const client = require('./db'); 
+
+router.get('/api/admin/products', requireAdmin, async (req, res) => {
+  try {
+    const { rows } = await client.query(`SELECT * FROM products`);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+});
 // Register route - separate top-level route
 router.post("/register", async (req, res, next) => {
   try {

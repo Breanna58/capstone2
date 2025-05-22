@@ -5,11 +5,17 @@ function PublicProducts() {
   const [favorites, setFavorites] = useState([]);
   const token = localStorage.getItem("token");
 
+  // Fetch all products
   useEffect(() => {
     async function fetchProducts() {
-      const res = await fetch('http://localhost:3000/api/products');
-      const data = await res.json();
-      setProducts(data);
+      try {
+        const res = await fetch('http://localhost:3000/api/products');
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("Product fetch error:", err);
+      }
     }
 
     fetchProducts();
@@ -21,14 +27,22 @@ function PublicProducts() {
 
     async function fetchFavorites() {
       try {
-        const res = await fetch('/api/favorites', {
+        const res = await fetch('http://localhost:3000/api/favorites', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('Failed to fetch favorites');
+
+        console.log("Fetching favorites with token:", token);
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Failed to fetch favorites. Status:", res.status, "Response:", errorText);
+          throw new Error('Failed to fetch favorites');
+        }
+
         const data = await res.json();
-        setFavorites(data.map(fav => fav.productId)); // Assuming response has productId
+        setFavorites(data.map(fav => fav.productId)); // Assuming API returns an array of { productId }
       } catch (err) {
-        console.error(err);
+        console.error("Favorites fetch error:", err);
       }
     }
 
@@ -37,7 +51,7 @@ function PublicProducts() {
 
   const handleAddToCart = async (product) => {
     try {
-      const res = await fetch("/api/cart/add", {
+      const res = await fetch("http://localhost:3000/api/cart/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,16 +74,14 @@ function PublicProducts() {
 
     try {
       if (favorites.includes(productId)) {
-        // Remove from favorites
-        const res = await fetch(`/api/favorites/${productId}`, {
+        const res = await fetch(`http://localhost:3000/api/favorites/${productId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('Failed to remove favorite');
         setFavorites(favorites.filter(id => id !== productId));
       } else {
-        // Add to favorites
-        const res = await fetch('/api/favorites', {
+        const res = await fetch('http://localhost:3000/api/favorites', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -108,7 +120,10 @@ function PublicProducts() {
               {token && (
                 <button
                   onClick={() => toggleFavorite(product.id)}
-                  style={{ marginLeft: '0.5rem', backgroundColor: isFavorite ? 'gold' : 'lightgray' }}
+                  style={{
+                    marginLeft: '0.5rem',
+                    backgroundColor: isFavorite ? 'gold' : 'lightgray',
+                  }}
                 >
                   {isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
                 </button>
