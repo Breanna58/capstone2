@@ -17,6 +17,7 @@ export default function Products() {
       });
       if (!res.ok) throw new Error("Failed to add to cart");
       alert(`Added ${product.name} to cart`);
+      // Optionally: refetch cart here or notify parent component
     } catch (err) {
       alert(err.message);
     }
@@ -28,13 +29,17 @@ export default function Products() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(res.status === 401 ? "Unauthorized" : "Fetch error");
+        return res.json();
+      })
       .then(data => setProducts(data))
       .catch(err => {
         console.error(err);
-        alert("You must be logged in to see products");
+        alert(err.message);
       });
   }, [token]);
+  
 
   return (
     <div>

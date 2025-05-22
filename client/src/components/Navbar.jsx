@@ -18,10 +18,9 @@ function Navbar() {
       {token ? (
         <>
           {/* Links available to all authenticated users */}
-          <Link to="/products">My Products</Link>
+          <Link to="/products">My favorite Products</Link>
           <Link to="/notes">Notes</Link>
           <Link to="/cart">Cart</Link> 
-          <Link to="/my-products">My Products</Link>
 
 
           {/* Admin-specific link */}
@@ -35,7 +34,7 @@ function Navbar() {
       ) : (
         <>
           <Link to="/login">Login</Link>
-          <Link to="/register">Register</Link>
+          <Link to="/register">Create an Account</Link>
         </>
       )}
     </nav>

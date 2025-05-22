@@ -4,6 +4,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 
 const authRoutes = require("../routes/auth");
+
 const requireToken = require("../routes/middleware");
 const { client } = require("./db");
 
@@ -13,7 +14,7 @@ server.use(cors());
 server.use(morgan("dev"));
 server.use(express.json());
 
-server.use("/api/auth", authRoutes); // auth routes should be mounted early
+server.use("/api/auth", authRoutes); 
 
 // CRUD endpoints
 server.post("/api/notes", requireToken, async (req, res, next) => {
@@ -69,6 +70,19 @@ server.put("/api/notes/:id", requireToken, async (req, res) => {
 server.get("/api/products", async (req, res, next) => {
   try {
     const result = await client.query("SELECT * FROM products");
+    res.json(result.rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+server.get('/api/users', requireToken, requireAdmin, async (req, res, next) => {
+  try {
+    const result = await client.query(`
+      SELECT id, email, role, created_at, updated_at
+      FROM users ORDER BY id
+    `);
     res.json(result.rows);
   } catch (error) {
     next(error);
@@ -214,7 +228,11 @@ server.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || "Internal Server Error" });
 });
 
+
+
+
 // DB + table initialization
+
 async function init() {
   try {
     await client.connect();
@@ -223,6 +241,7 @@ async function init() {
     await client.query(`DROP TABLE IF EXISTS cart_items`);
     await client.query(`DROP TABLE IF EXISTS carts`);
     await client.query(`DROP TABLE IF EXISTS notes`);
+    await client.query(`DROP TABLE IF EXISTS favorites`);
     await client.query(`DROP TABLE IF EXISTS products`);
     await client.query(`DROP TABLE IF EXISTS users`);
 
@@ -231,6 +250,7 @@ async function init() {
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'user',
         created_at TIMESTAMP DEFAULT now(),
         updated_at TIMESTAMP DEFAULT now()
       )
@@ -244,6 +264,16 @@ async function init() {
         price DECIMAL(10,2) NOT NULL,
         created_at TIMESTAMP DEFAULT now(),
         updated_at TIMESTAMP DEFAULT now()
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE favorites (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT now(),
+        UNIQUE(user_id, product_id)
       )
     `);
 
@@ -282,8 +312,8 @@ async function init() {
 
     const hashedPassword = await bcrypt.hash("breanna", 10);
     await client.query(
-      `INSERT INTO users(email, password) VALUES ($1, $2)`,
-      ["breanna@gmail.com", hashedPassword]
+      `INSERT INTO users(email, password, role) VALUES ($1, $2, $3)`,
+      ["breanna@gmail.com", hashedPassword, "admin"]
     );
 
     await client.query(`
@@ -305,6 +335,7 @@ async function init() {
     console.error("Error during init:", error);
   }
 }
+
 
 init();
 

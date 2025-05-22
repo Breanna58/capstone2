@@ -6,6 +6,9 @@ import Navbar from './components/Navbar.jsx';
 import PublicProducts from './components/PublicProducts.jsx';
 import Cart from "./components/Cart";
 import MyProducts from './components/MyProducts.jsx';
+import Register from './components/Register.jsx'; 
+import AdminDashboard from './components/AdminDashboard';
+
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
@@ -14,7 +17,8 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const loggedIn = !!localStorage.getItem('token');
+  const token = localStorage.getItem('token'); 
+  const loggedIn = !!token;
 
   return (
     <>
@@ -24,6 +28,9 @@ function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/admin" element={<AdminDashboard token={token} />} />
+
+
 
         {/* Protected routes */}
         <Route
